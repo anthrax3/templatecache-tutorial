@@ -6,6 +6,8 @@ them, and when you should be using them in practice.
 
 # Using Templates as a String
 
+{video: template}
+
 {x: create index.html}
 Let's start with this initial setup for index.html
 
@@ -55,6 +57,8 @@ the `templateUrl` property instead of `template`. Let's try this out in the
 next example.
 
 # Using a Remote Template
+
+{video: templateurl}
 
 {x: create test.html}
 Let's move our template string into its own new file, called `test.html`.
@@ -120,6 +124,8 @@ Angular loads.
 
 # Using Inline Templates:
 
+{video: inline-templates}
+
 Angular ships with a [script](https://docs.angularjs.org/api/ng/directive/script)
 directive, which when passed `text/ng-template` as the text attribute, Angular
 will recognize that it is a template meant to be used with our application and
@@ -160,6 +166,8 @@ you're developing. In the next example, we'll show you the recommended way of
 including templates in your production application.
 
 # Populating $templateCache Directly
+
+{video: directly}
 
 `$templateCache` is simply a key-value store where you can `get` and `put`
 templates. Angular will automatically check `$templateCache` whenever you use
