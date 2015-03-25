@@ -1,0 +1,252 @@
+# Introduction
+
+In AngularJS, there are multiple ways for you to specify templates in your
+application. We're going to go over all of them, and the differences between
+them, and when you should be using them in practice.
+
+# Using Templates as a String
+
+{x: create index.html}
+Let's start with this initial setup for index.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>$templateCache</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular-route.min.js"></script>
+  <script src="app.js"></script>
+</head>
+<body ng-app="app">
+  <div ng-view></div>
+</body>
+</html>
+```
+
+{x: create app.js}
+And the following code for app.js
+
+```javascript
+(function(){
+
+  function TestCtrl() {
+    this.user = {name: 'Blake'};
+  }
+
+  angular.module('app', ['ngRoute'])
+  .config(function($routeProvider){
+    $routeProvider.when('/', {
+      controller: 'TestCtrl as test',
+      template: 'Hello {{ test.user.name }}!'
+    })
+    .otherwise('/');
+  })
+  .controller('TestCtrl', TestCtrl);
+
+})()
+```
+
+In our initial code, we're passing a string directly into $route for our
+template that we want to use with our `TestCtrl`. You usually wouldn't do this
+in your application though, as it'd be hard to maintain all of your templates
+in your config block. Angular allows us to specify remote templates by using
+the `templateUrl` property instead of `template`. Let's try this out in the
+next example.
+
+# Using a Remote Template
+
+{x: create test.html}
+Let's move our template string into its own new file, called `test.html`.
+
+```html
+Hello {{ test.user.name }}!
+```
+
+{x: use templateurl}
+Next, we'll update our configuration in `app.js` to use `templateUrl` and pass
+in a url to our template, instead of using `template` and passing in a string.
+
+```javascript
+function TestCtrl() {
+  this.user = {name: 'Blake'};
+}
+
+angular.module('app', ['ngRoute'])
+.config(function($routeProvider){
+  $routeProvider.when('/', {
+    controller: 'TestCtrl as test',
+    templateUrl: 'test.html'
+  })
+  .otherwise('/');
+})
+.controller('TestCtrl', TestCtrl);
+```
+
+{info}
+For this example to work, you need to be serving your files off of a server and
+not opening your files directly through your filesystem (i.e. a URL starting
+with `file://`). We recommend using [browser-sync](http://www.browsersync.io/)
+(can be installed via `npm instal browser-sync -g`) or python (by running
+`python -m SimpleHTTPServer`) to do this.
+
+If we look at our requests in the console when the page loads, we can see that
+a separate request is used to retrieve our template from `test.html` This is
+Angular requesting the file and adding the template to `$templateCache`. We
+can demonstrate this behavior by injecting `$templateCache` into `TestCtrl` and
+then logging `$templateCache.get('test.html')` to the console. When we refresh,
+we'll see that `Hello {{ test.user.name }}!` has been logged out to the console.
+
+{x: add console log}
+Add `console.log($templateCache.get('test.html'))` to the end of `TestCtrl`
+
+```
+function TestCtrl($templateCache) {
+  this.user = {name: 'Blake'};
+
+  console.log($templateCache.get('test.html'));
+}
+```
+
+Using remote templates makes the most sense for your development environment.
+It allows you to logically split your templates out into separate files.
+However, as your application grows, you may run into performance issues when
+you have to download multiple templates on each page load, which can make you
+application appear slow since your templates need to be downloaded before they
+can be rendered. In development this isn't an problem since you're working off
+of `localhost`, so latency/network is usually not an issue. In the next
+examples, we'll show you a couple ways you prepopulate `$templateCache` before
+Angular loads.
+
+# Using Inline Templates:
+
+Angular ships with a [script](https://docs.angularjs.org/api/ng/directive/script)
+directive, which when passed `text/ng-template` as the text attribute, Angular
+will recognize that it is a template meant to be used with our application and
+put any content between the script tags into `$templateCache`, keyed by the
+`id` attribute.
+
+{x: add inline template}
+Let's update `index.html` with the following code
+
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular-route.min.js"></script>
+</head>
+<body ng-app="app">
+  <div ng-view></div>
+  <script type="text/ng-template" id="test.html">
+    Hello {{ test.user.name }}!
+  </script>
+</body>
+</html>
+```
+
+Take note that the template must be within our `ng-app` directive in order for
+Angular to recognize it. Now if we look at our console, we see that there isn't
+an additional network request isn't made to retrieve our template, and
+`TestCtrl` is still logging out our `test.html` template. This is convinient as
+we don't need to change our javascript at all, Angular automatically looks at
+`$templateCache` before trying to retrieve a remote template. This method isn't
+ideal for development though, as it means all of your templates need to be
+inlined within `index.html` which can make it really hard to manage all your
+templates in one file, so it's recommended to stick with remote templates while
+you're developing. In the next example, we'll show you the recommended way of
+including templates in your production application.
+
+# Populating $templateCache Directly
+
+`$templateCache` is simply a key-value store where you can `get` and `put`
+templates. Angular will automatically check `$templateCache` whenever you use
+`templateUrl` in your application or when you specify a template `src` with
+`ng-include` before attempting to retrieve your template from a remote location.
+
+{x: remove inlined template}
+Remove the inlined template from the previous example
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <title>$templateCache</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular-route.min.js"></script>
+  <script src="app.js"></script>
+</head>
+<body ng-app="app">
+  <div ng-view></div>
+</body>
+</html>
+```
+
+Since `$templateCache` is a service, we won't be able to access it in the
+`config` phase of our app. The earliest we can access `$templateCache` is in
+the `run` phase for our app. Angular modules can have as many `run` blocks
+as needed.
+
+{x: add run function}
+Add a run function to `app.js`, and inject `$templateCache` into it.
+
+```javascript
+function TestCtrl($templateCache) {
+  this.user = {name: 'Blake'};
+
+  console.log($templateCache.get('test.html'))
+}
+
+angular.module('app', ['ngRoute'])
+.config(function($routeProvider){
+  $routeProvider.when('/', {
+    controller: 'TestCtrl as test',
+    templateUrl: 'test.html'
+  })
+  .otherwise('/');
+})
+.controller('TestCtrl', TestCtrl);
+
+angular.module('app').run(function ($templateCache){
+
+});
+```
+
+Now we'll be able to `put` templates directly into `$templateCache`. Let's put
+our `test.html` template into `$templateCache` via this run block.
+
+{x: put template}
+Add our template to `$templateCache` using the `put()` function.
+
+```javascript
+angular.module('app').run(function ($templateCache){
+  $templateCache.put('test.html', 'Hello {{ test.user.name }}!');
+});
+```
+
+Now when we refresh the page, we'll see that no additional call is required to
+get our `test.html` template. This is the preferred way of loading templates in
+production environments. You'd never want to write that run function manually,
+since it'd be hard to maintain all your templates as strings and in one file.
+You can generate this function by creating a task that iterates over all your
+templates and stringifies them into `$templateCache` as part of your build
+process. You should stick with the remote template method in development unless
+you're using an asset processor in development (such as a `gulp` or `grunt`
+tasks that watches and processes your assets, or `sprockets` which ships with
+rails).
+
+Here are a few modules that can help you inject templates into `$templateCache`:
+- [grunt-angular-templates](https://github.com/ericclemmons/grunt-angular-templates)
+  for use with Grunt
+- [gulp-angular-templatecache](https://github.com/miickel/gulp-angular-templatecache)
+  for use with Gulp
+- [angular-rails-templates](https://github.com/pitr/angular-rails-templates) for
+  use with Rails/Sprockets
+
+If you're using the remote template method in development, the only difference
+in your production environment should be the addtional run function used for
+populating `$templateCache`. Either way, you shouldn't need to change the way
+you specify templates to `templateUrl` since Angular will automatically fall
+back to the remote template method if it can't find the template you've
+specified in `$templateCache`.

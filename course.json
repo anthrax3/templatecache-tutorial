@@ -1,0 +1,12 @@
+{
+  "title": "Everything You Need to Know About AngularJS's $templateCache",
+  "description": "This tutorial will show you the different ways of using templates with AngularJS, and when to use them in practice.",
+  "url": "templatecache-tutorial",
+  "twitter": "iamalbertpai",
+  "coverImage": "",
+
+  "author": {
+    "github": "apai4"
+  }
+}
+
