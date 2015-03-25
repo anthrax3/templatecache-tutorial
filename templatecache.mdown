@@ -87,7 +87,7 @@ angular.module('app', ['ngRoute'])
 For this example to work, you need to be serving your files off of a server and
 not opening your files directly through your filesystem (i.e. a URL starting
 with `file://`). We recommend using [browser-sync](http://www.browsersync.io/)
-(can be installed via `npm instal browser-sync -g`) or python (by running
+(can be installed via `npm install browser-sync -g`) or python (by running
 `python -m SimpleHTTPServer`) to do this.
 
 If we look at our requests in the console when the page loads, we can see that
@@ -134,6 +134,7 @@ Let's update `index.html` with the following code
 <!DOCTYPE html>
 <html>
 <head>
+  <title>$templateCache</title>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0-beta.5/angular-route.min.js"></script>
 </head>
@@ -195,7 +196,7 @@ Add a run function to `app.js`, and inject `$templateCache` into it.
 function TestCtrl($templateCache) {
   this.user = {name: 'Blake'};
 
-  console.log($templateCache.get('test.html'))
+  console.log($templateCache.get('test.html'));
 }
 
 angular.module('app', ['ngRoute'])
